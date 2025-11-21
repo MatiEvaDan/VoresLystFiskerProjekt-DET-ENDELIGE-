@@ -1,6 +1,6 @@
-﻿using Lystfiskerportalen.Models;
+﻿using VoresLystFiskerPortal.Models;
 
-namespace Lystfiskerportalen.Persistence
+namespace VoresLystFiskerPortal.Persistence
 {
     public interface IFishRepo
     {

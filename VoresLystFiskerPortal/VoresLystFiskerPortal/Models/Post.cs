@@ -1,7 +1,7 @@
 ﻿using System.Security.Principal;
 using VoresLystFiskerPortal.Data;
 
-namespace Lystfiskerportalen.Models
+namespace VoresLystFiskerPortal.Models
 {
     public class Post
     {

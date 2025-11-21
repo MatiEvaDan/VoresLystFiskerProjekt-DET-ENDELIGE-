@@ -1,3 +1,4 @@
+using VoresLystFiskerPortal.Persistence;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -5,6 +6,7 @@ using VoresLystFiskerPortal.Client.Pages;
 using VoresLystFiskerPortal.Components;
 using VoresLystFiskerPortal.Components.Account;
 using VoresLystFiskerPortal.Data;
+using VoresLystFiskerPortal.Persistence;
 
 namespace VoresLystFiskerPortal
 {
@@ -42,6 +44,9 @@ namespace VoresLystFiskerPortal
                 .AddDefaultTokenProviders();
 
             builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
+            builder.Services.AddScoped<IFishRepo, FishRepo>();
+            builder.Services.AddScoped<ITechniqueEquipmentRepo, TechniqueEquipmentRepo>();
+            builder.Services.AddScoped<IPostRepo, PostRepo>();
 
             var app = builder.Build();
 

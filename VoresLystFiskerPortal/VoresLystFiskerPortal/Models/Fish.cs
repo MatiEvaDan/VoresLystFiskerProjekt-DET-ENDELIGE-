@@ -1,4 +1,4 @@
-﻿namespace Lystfiskerportalen.Models
+﻿namespace VoresLystFiskerPortal.Models
 {
     public class Fish
     {
