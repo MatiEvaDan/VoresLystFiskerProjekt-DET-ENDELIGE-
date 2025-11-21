@@ -1,0 +1,13 @@
+﻿using Lystfiskerportalen.Models;
+
+namespace Lystfiskerportalen.Persistence
+{
+    public interface IPostRepo
+    {
+        Task AddPostAsync(Post post);
+        Task DeletePostAsync(int id);
+        Task<List<Post>> GetAllPostsAsync();
+        Task<Post> GetByIdPostAsync(int id);
+        Task UpdatePostAsync(int id, Post _post);
+    }
+}
