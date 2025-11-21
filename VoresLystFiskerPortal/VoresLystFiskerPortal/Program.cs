@@ -5,6 +5,7 @@ using VoresLystFiskerPortal.Client.Pages;
 using VoresLystFiskerPortal.Components;
 using VoresLystFiskerPortal.Components.Account;
 using VoresLystFiskerPortal.Data;
+using VoresLystFiskerPortal.Persistence;
 
 namespace VoresLystFiskerPortal
 {
@@ -41,7 +42,11 @@ namespace VoresLystFiskerPortal
                 .AddSignInManager()
                 .AddDefaultTokenProviders();
 
+
             builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
+            builder.Services.AddScoped<IFishRepo, FishRepo>();
+            builder.Services.AddScoped<ITechniqueEquipmentRepo, TechniqueEquipmentRepo>();
+            builder.Services.AddScoped<IPostRepo, PostRepo>();
 
             var app = builder.Build();
 

@@ -1,0 +1,155 @@
+﻿@inject IPostRepo postRepo
+@inject IFishRepo fishRepo
+@inject ITechniqueEquipmentRepo techniqueEquipmentRepo
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<EditForm Model="newPost" OnValidSubmit="SavePost">
+    <div class="mb-3">
+        <label for="ImageUpload" class="form-label">Upload billede</label>
+        <InputFile OnChange="OnFileSelected" class="form-control"></InputFile>
+    </div>
+    @if (!string.IsNullOrEmpty(newPost.PostImage))
+    {
+        <img src="@newPost.PostImage" class="img-fluid" />
+    }
+
+    <div class="mb-3">
+        <label class="form-label">Beskrivelse</label>
+        <textarea class="form-control"
+                  placeholder="Fortæl os hvad du har fanget her" @bind="newPost.Description" rows="3"></textarea>
+    </div>
+    <div class="mb-3">
+        <label for="LocationBox" class="form-label">Lokation</label>
+        <input type="text" class="form-control"
+               placeholder="Indtast lokationen for dit sidste fiskespot her" @bind="newPost.Location">
+    </div>
+
+
+    <div class="mb-3">
+        <label for="FishTypeBox" class="form-label">Type af fisk: </label>
+        <input type="text" class="form-control"
+               @bind="newFish.FishType">
+    </div>
+    <div class="mb-3">
+        <label for="FishTypeBox" class="form-label">Fiskens vægt i kg: </label>
+        <input type="text" class="form-control"
+               @bind="newFish.FishWeight">
+    </div>
+    <div class="mb-3">
+        <label for="FishTypeBox" class="form-label">Fiskens længde i cm: </label>
+        <input type="text" class="form-control"
+               @bind="newFish.FishLength">
+    </div>
+    <div class="mb-3">
+        <label for="FishTypeBox" class="form-label">Antal af fisk fanget: </label>
+        <input type="text" class="form-control"
+               @bind="newFish.FishAmount">
+    </div>
+
+
+    <div class="mb-3">
+        <label for="TechniqueEquipmentBox" class="form-label">Fisketeknik: </label>
+        <input type="text" class="form-control"
+               @bind="newTechniqueEquipment.FishingTechnique">
+    </div>
+    <div class="mb-3">
+        <label for="TechniqueEquipmentBox" class="form-label">Krogtype: </label>
+        <input type="text" class="form-control"
+               @bind="newTechniqueEquipment.HookType">
+    </div>
+    <div class="mb-3">
+        <label for="TechniqueEquipmentBox" class="form-label">Krognavn: </label>
+        <input type="text" class="form-control"
+               @bind="newTechniqueEquipment.HookName">
+    </div>
+
+
+
+
+
+    <button type="button" class="btn btn-primary" @onclick="SavePost">
+        Opret mit opslag
+    </button>
+</EditForm>
+
+
+@if (!string.IsNullOrEmpty(successMessage))
+{
+    <div class="alert alert-success">@successMessage</div>
+}
+
+
+
+
+
+
+@code {
+    private Fish newFish = new Fish();
+    private Post newPost = new Post();
+    private TechniqueEquipment newTechniqueEquipment = new TechniqueEquipment();
+    private string? successMessage;
+
+    private async Task OnFileSelected(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+
+        if (file != null)
+        {
+            // Lav et unikt filnavn
+            var fileName = $"{Guid.NewGuid()}_{file.Name}";
+            var filePath = Path.Combine("wwwroot/uploads", fileName);
+
+            // Sørg for at mappen findes
+            Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
+
+            // Gem filen på serveren
+            using var stream = new FileStream(filePath, FileMode.Create);
+            await file.OpenReadStream(maxAllowedSize: 10_000_000).CopyToAsync(stream);
+
+            // Gem stien i databasen
+            newPost.PostImage = $"/uploads/{fileName}";
+        }
+    }
+
+
+    private async Task SavePost()
+    {
+        try
+        {
+
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+
+            if(user.Identity?.IsAuthenticated == true)
+            {
+                var userId = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                newPost.UserId = userId; // Sæt UserId her
+            }
+
+
+           
+            newPost.DateAndTime = DateTime.Now;
+
+            await postRepo.AddPostAsync(newPost);
+            newFish.PostId = newPost.PostId;
+            await fishRepo.AddFishAsync(newFish);
+            newTechniqueEquipment.PostId = newPost.PostId;
+            await techniqueEquipmentRepo.AddTechniqueEquipmentAsync(newTechniqueEquipment);
+
+            successMessage = "Dit opslag er oprettet!";
+            newPost = new Post();
+            newFish = new Fish();
+            newTechniqueEquipment = new TechniqueEquipment();
+
+        }
+        catch (Exception e)
+        {
+            successMessage = $"Dit opslag kunne ikke oprettes: {e.Message}";
+        }
+
+
+    }
+}
+
+
+

@@ -1,4 +1,4 @@
-using Lystfiskerportalen.Models;
+using VoresLystFiskerPortal.Models;
 using Microsoft.AspNetCore.Identity;
 
 namespace VoresLystFiskerPortal.Data

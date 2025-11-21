@@ -1,8 +1,8 @@
-﻿using Lystfiskerportalen.Models;
+﻿using VoresLystFiskerPortal.Models;
 using Microsoft.EntityFrameworkCore;
 using VoresLystFiskerPortal.Data;
 
-namespace Lystfiskerportalen.Persistence
+namespace VoresLystFiskerPortal.Persistence
 {
     public class TechniqueEquipmentRepo : ITechniqueEquipmentRepo
     {
