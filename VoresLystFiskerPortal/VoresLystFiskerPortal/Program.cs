@@ -43,6 +43,7 @@ namespace VoresLystFiskerPortal
                 .AddSignInManager()
                 .AddDefaultTokenProviders();
 
+
             builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
             builder.Services.AddScoped<IFishRepo, FishRepo>();
             builder.Services.AddScoped<ITechniqueEquipmentRepo, TechniqueEquipmentRepo>();
