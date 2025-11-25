@@ -1,0 +1,92 @@
+﻿@using VoresLystFiskerPortal.Models
+
+@inject Microsoft.AspNetCore.Components.NavigationManager NavManager
+
+<div class="card mb-3 shadow-sm" style="overflow: hidden;">
+    <div class="card-header d-flex justify-content-between align-items-center bg-light py-2">
+        <div class="d-flex align-items-center">
+            <span class="fw-bold me-2">@PostData.User?.Name</span>
+            <small class="text-muted" style="font-size: 0.8rem;">@PostData.User?.UserName</small>
+        </div>
+        <small class="text-muted">@PostData.DateAndTime.ToString("dd. MMM HH:mm")</small>
+    </div>
+
+    <div class="row g-0">
+        <div class="col-md-4 position-relative" style="min-height: 200px; background-color: #f0f0f0;" @onclick="@(() => NavigateToPostDetails(PostData.PostId))">
+            >
+            @if (!string.IsNullOrEmpty(PostData.PostImage))
+            {
+                <img src="@PostData.PostImage" class="img-fluid h-100 w-100" style="object-fit: cover; position: absolute;" alt="Fangst">
+            }
+            else
+            {
+                <div class="d-flex align-items-center justify-content-center h-100 text-muted">
+                    <span>Intet billede</span>
+                </div>
+            }
+        </div>
+
+        <div class="col-md-8">
+            <div class="card-body h-100 d-flex flex-col flex-column">
+
+                <div class="mb-2">
+                    <h6 class="card-title mb-1">📍 @PostData.Location</h6>
+                    <p class="card-text text-truncate-custom">@PostData.Description</p>
+                </div>
+
+                <div class="mt-auto">
+                    <hr class="my-2" />
+
+                    <div class="d-flex flex-wrap gap-2" style="font-size: 0.85rem;">
+                        @if (PostData.Fish != null && PostData.Fish.Any())
+                        {
+                            var firstFish = PostData.Fish.First();
+                            <div class="badge bg-success bg-opacity-10 text-success border border-success p-2">
+                                🐟 @firstFish.FishType: @firstFish.FishWeight kg (@firstFish.FishLength cm) @firstFish.FishAmount stk
+                                @if (PostData.Fish.Count > 1)
+                                {
+                                    <span>(+@(PostData.Fish.Count - 1) andre)</span>
+                                }
+                            </div>
+                        }
+
+                        @if (PostData.TechniqueEquipments != null && PostData.TechniqueEquipments.Any())
+                        {
+                            var gear = PostData.TechniqueEquipments.First();
+                            <div class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary p-2">
+                                🎣 @gear.FishingTechnique
+                                🎣 @gear.HookName
+                                🎣 @gear.HookType
+                            </div>
+                        }
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .text-truncate-custom {
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+</style>
+
+@code {
+    [Parameter]
+    public Post PostData { get; set; }
+
+
+
+
+
+    private void NavigateToPostDetails(int PostId)
+    {
+        NavManager.NavigateTo($"/postdetails/{PostId}");
+    }
+}
+
