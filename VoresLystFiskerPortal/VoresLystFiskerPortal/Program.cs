@@ -7,6 +7,7 @@ using VoresLystFiskerPortal.Components;
 using VoresLystFiskerPortal.Components.Account;
 using VoresLystFiskerPortal.Data;
 using VoresLystFiskerPortal.Persistence;
+using VoresLystFiskerPortal.Service;
 
 namespace VoresLystFiskerPortal
 {
@@ -20,6 +21,9 @@ namespace VoresLystFiskerPortal
             builder.Services.AddRazorComponents()
                 .AddInteractiveServerComponents()
                 .AddInteractiveWebAssemblyComponents();
+
+            builder.Services.AddHttpClient<WeatherService>();  
+            builder.Services.AddScoped<WeatherService>();
 
             builder.Services.AddCascadingAuthenticationState();
             builder.Services.AddScoped<IdentityUserAccessor>();
