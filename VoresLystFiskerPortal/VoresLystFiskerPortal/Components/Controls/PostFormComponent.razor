@@ -1,7 +1,12 @@
-﻿@inject IPostRepo postRepo
+﻿@using VoresLystFiskerPortal.Service;
+@using VoresLystFiskerPortal.Models;
+
+@inject IPostRepo postRepo
 @inject IFishRepo fishRepo
 @inject ITechniqueEquipmentRepo techniqueEquipmentRepo
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@inject WeatherService WeatherService
+
 
 <EditForm Model="newPost" OnValidSubmit="SavePost">
     <div class="mb-3">
@@ -18,16 +23,30 @@
         <textarea class="form-control"
                   placeholder="Fortæl os hvad du har fanget her" @bind="newPost.Description" rows="3"></textarea>
     </div>
-   <div class="mb-3">
-        <label for="LocationBox" class="form-label">Lokation</label>
-        <InputSelect class="form-select" @bind-Value="newPost.Location">
+
+    <div class="mb-3">
+        <label class="form-label">Lokation</label>
+
+        <select class="form-select" @onchange="OnLocationChanged">
             <option value="">Vælg en by</option>
             @foreach (var city in Cities)
             {
                 <option value="@city">@city</option>
             }
-        </InputSelect>
+        </select>
     </div>
+
+    @if (weatherInfo != null)
+    {
+        <div class="card shadow-sm mb-3" style="max-width: 22rem;">
+            <div class="card-body">
+                <h5 class="card-title">🌤️ @weatherInfo.Name</h5>
+                <p class="card-text"><strong>@weatherInfo.Main.Temp°C</strong></p>
+                <p class="card-text text-muted">@weatherInfo.Weather[0].Description</p>
+            </div>
+        </div>
+    }
+
 
 
 
@@ -95,15 +114,38 @@
     private TechniqueEquipment newTechniqueEquipment = new TechniqueEquipment();
     private string? successMessage;
 
-    private List<string> Cities = new()
+    private List<string> Cities = new();
+    private WeatherInfo? weatherInfo;
+
+    protected override async Task OnInitializedAsync()
     {
-        "Copenhagen", "Aarhus", "Odense", "Aalborg", "Esbjerg",
-        "Randers", "Kolding", "Horsens", "Vejle", "Roskilde",
-        "Herning", "Horsholm", "Naestved", "Fredericia", "Viborg",
-        "Koge", "Holstebro", "Slagelse", "Hillerod", "Sonderborg",
-        "Svendborg", "Hjorring", "Skive", "Thisted", "Silkeborg",
-        "Kalundborg", "Ringsted", "Grenaa", "Skanderborg", "Nykobing Falster"
-    };
+        Cities = new()
+        {
+            "Copenhagen", "Aarhus", "Odense", "Aalborg", "Esbjerg",
+            "Randers", "Kolding", "Horsens", "Vejle", "Roskilde",
+            "Herning", "Horsholm", "Naestved", "Fredericia", "Viborg",
+            "Koge", "Holstebro", "Slagelse", "Hillerod", "Sonderborg",
+            "Svendborg", "Hjorring", "Skive", "Thisted", "Silkeborg",
+            "Kalundborg", "Ringsted", "Grenaa", "Skanderborg", "Nykobing Falster"
+        };
+    }
+
+   
+    private async Task OnLocationChanged(ChangeEventArgs e)
+    {
+        var city = e.Value?.ToString();
+        newPost.Location = city;
+
+        if (string.IsNullOrWhiteSpace(city))
+        {
+            weatherInfo = null;
+            return;
+        }
+
+        weatherInfo = await WeatherService.GetWeatherAsync(city);
+
+        StateHasChanged();
+    }
 
     private async Task OnFileSelected(InputFileChangeEventArgs e)
     {
@@ -125,7 +167,8 @@
             // Gem stien i databasen
             newPost.PostImage = $"/uploads/{fileName}";
         }
-    }
+    } 
+
 
 
     private async Task SavePost()
