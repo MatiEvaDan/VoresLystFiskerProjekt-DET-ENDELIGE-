@@ -1,0 +1,157 @@
+﻿@inject UserManager<ApplicationUser> UserManager
+@inject AuthenticationStateProvider AuthState
+@inject ApplicationDbContext Database
+
+<div class="card shadow-sm p-4 mt-3">
+
+    @if (user == null)
+    {
+        <p>Indlæser profil...</p>
+    }
+    else
+    {
+        <h3 class="mb-3">Min Profil</h3>
+
+        @if (!IsEditing)
+        {
+            <!-- VIEW MODE -->
+            @if (!string.IsNullOrEmpty(user.ProfilePicture))
+            {
+                <img src="@($"/images/ProfilePics/{user.ProfilePicture}")"
+                     class="img-thumbnail mb-3"
+                     style="max-width: 150px;" />
+            }
+            else
+            {
+                <p><i>Intet profilbillede endnu</i></p>
+            }
+
+            <div class="mb-3">
+                <strong>Navn</strong><br />
+                @user.Name
+            </div>
+
+            <div class="mb-3">
+                <strong>Bio</strong><br />
+                @user.BioDescription
+            </div>
+
+            <button class="btn btn-primary" @onclick="EnableEdit">
+                Rediger profil
+            </button>
+        }
+        else
+        {
+            <!-- EDIT MODE -->
+            <EditForm Model="@user" OnValidSubmit="SaveProfile">
+                <DataAnnotationsValidator />
+
+                <div class="mb-3">
+                    <label>Navn</label>
+                    <InputText @bind-Value="user.Name" class="form-control" />
+                </div>
+
+                <div class="mb-3">
+                    <label>Profilbillede</label><br />
+
+                    @if (!string.IsNullOrEmpty(user.ProfilePicture))
+                    {
+                        <img src="@($"/images/ProfilePics/{user.ProfilePicture}")"
+                             class="img-thumbnail mb-2"
+                             style="max-width: 150px;" />
+                    }
+
+                    <InputFile OnChange="HandleProfilePictureUpload" />
+                </div>
+
+
+                <div class="mb-3">
+                    <label>Bio</label>
+                    <InputTextArea @bind-Value="user.BioDescription" class="form-control" />
+                </div>
+
+                <button type="submit" class="btn btn-success me-2">
+                    Gem ændringer
+                </button>
+
+                <button type="button" class="btn btn-secondary"
+                        @onclick="CancelEdit">
+                    Annuller
+                </button>
+            </EditForm>
+        }
+    }
+
+</div>
+
+@code {
+    private ApplicationUser? user;
+    private bool IsEditing = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthState.GetAuthenticationStateAsync();
+        var authUser = authState.User;
+
+        user = await UserManager.GetUserAsync(authUser);
+
+        // Sikrer at user ikke er null
+        user ??= new ApplicationUser();
+    }
+
+    private void EnableEdit()
+    {
+        IsEditing = true;
+    }
+
+    private void CancelEdit()
+    {
+        Db.ChangeTracker.Clear(); // smid ændringer væk
+        IsEditing = false;
+    }
+
+    private async Task SaveProfile()
+    {
+        Db.Users.Update(user!);
+        await Db.SaveChangesAsync();
+
+        IsEditing = false;
+    }
+
+    private async Task HandleProfilePictureUpload(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+
+        // Valider filtype
+        var allowed = new[] { "image/jpeg", "image/png", "image/jpg" };
+        if (!allowed.Contains(file.ContentType))
+        {
+            // Du kan evt. vise fejlbesked
+            return;
+        }
+
+        // Valider størrelsen (max 5MB fx)
+        if (file.Size > 5 * 1024 * 1024)
+        {
+            return;
+        }
+
+        // Lav unikt filnavn
+        var extension = Path.GetExtension(file.Name);
+        var fileName = $"{Guid.NewGuid()}{extension}";
+
+        // Hvor skal filen gemmes?
+        var filePath = Path.Combine("wwwroot/ProfilePics", fileName);
+
+        // Gem filen
+        using (var stream = File.Create(filePath))
+        {
+            await file.OpenReadStream().CopyToAsync(stream);
+        }
+
+        // Sæt filnavnet på brugeren
+        user.ProfilePicture = fileName;
+    }
+
+}
+

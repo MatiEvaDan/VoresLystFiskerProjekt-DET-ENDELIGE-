@@ -18,11 +18,17 @@
         <textarea class="form-control"
                   placeholder="Fortæl os hvad du har fanget her" @bind="newPost.Description" rows="3"></textarea>
     </div>
-    <div class="mb-3">
+   <div class="mb-3">
         <label for="LocationBox" class="form-label">Lokation</label>
-        <input type="text" class="form-control"
-               placeholder="Indtast lokationen for dit sidste fiskespot her" @bind="newPost.Location">
+        <InputSelect class="form-select" @bind-Value="newPost.Location">
+            <option value="">Vælg en by</option>
+            @foreach (var city in Cities)
+            {
+                <option value="@city">@city</option>
+            }
+        </InputSelect>
     </div>
+
 
 
     <div class="mb-3">
@@ -88,6 +94,16 @@
     private Post newPost = new Post();
     private TechniqueEquipment newTechniqueEquipment = new TechniqueEquipment();
     private string? successMessage;
+
+    private List<string> Cities = new()
+    {
+        "Copenhagen", "Aarhus", "Odense", "Aalborg", "Esbjerg",
+        "Randers", "Kolding", "Horsens", "Vejle", "Roskilde",
+        "Herning", "Horsholm", "Naestved", "Fredericia", "Viborg",
+        "Koge", "Holstebro", "Slagelse", "Hillerod", "Sonderborg",
+        "Svendborg", "Hjorring", "Skive", "Thisted", "Silkeborg",
+        "Kalundborg", "Ringsted", "Grenaa", "Skanderborg", "Nykobing Falster"
+    };
 
     private async Task OnFileSelected(InputFileChangeEventArgs e)
     {
