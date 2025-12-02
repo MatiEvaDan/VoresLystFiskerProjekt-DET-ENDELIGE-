@@ -1,10 +1,22 @@
 ﻿@page "/profile"
 @rendermode InteractiveServer
 @attribute [Authorize]
+@inject NavigationManager NavManager
 
 <EditProfileComponent></EditProfileComponent>
-<PostFormComponent></PostFormComponent>
+
+
+<button class="home-btn" @onclick="NavigateCreatePost">
+    <img src="/Images/CreatePost_Ikon.png"
+         alt="CreatePost_Ikon"
+         style="border-radius: 50%; width: 40px; height: 40px; object-fit: cover; border: 2px solid #fff;" />Nyt Opslag
+</button>
 
 @code {
+
+    private void NavigateCreatePost()
+    {
+        NavManager.NavigateTo("/createpost");
+    }
 
 }
