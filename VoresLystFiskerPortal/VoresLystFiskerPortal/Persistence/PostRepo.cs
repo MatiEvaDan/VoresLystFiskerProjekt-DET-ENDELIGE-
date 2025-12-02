@@ -60,6 +60,31 @@ namespace VoresLystFiskerPortal.Persistence
             return await _applicationDbContext.Posts.ToListAsync();
         }
 
+        public async Task<List<Post>> GetLeaderBoardWeigthAsync()
+        {
+            return await _applicationDbContext.Posts
+                .Include(p => p.User)                 
+                .Include(p => p.Fish)                 
+                .Include(p => p.TechniqueEquipments)                                   
+                .OrderByDescending(p => p.Fish.Any() ? p.Fish.Max(f => f.FishWeight) : 0)
+                .Take(10) 
+                .ToListAsync();
+        }
+
+        public async Task<List<Post>> GetFeedPostsAsync()
+        {
+            return await _applicationDbContext.Posts
+                .Include(p => p.User)
+                .Include(p => p.Fish)
+                .Include(p => p.TechniqueEquipments)
+                .OrderByDescending(p => p.DateAndTime)
+                .ToListAsync();
+        }
+
+        
+
+
+
     }
 }
 

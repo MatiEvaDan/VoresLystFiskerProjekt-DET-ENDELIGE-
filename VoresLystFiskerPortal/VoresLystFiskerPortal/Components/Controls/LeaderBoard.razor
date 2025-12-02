@@ -1,0 +1,71 @@
+﻿@using VoresLystFiskerPortal.Models
+@using VoresLystFiskerPortal.Persistence
+@inject IPostRepo PostRepo
+@inject Microsoft.AspNetCore.Components.NavigationManager NavManager
+
+<div class="container">
+    <h2 class="text-center" style=" margin-top: 25px;"></h2>
+
+    @if (posts == null)
+    {
+        <p class="text-center">Henter data...</p>
+    }
+    else if (!posts.Any())
+    {
+        <p class="text-center">Ingen fangster fundet endnu.</p>
+    }
+    else
+    {
+        <table class="table table-striped table-hover">
+            <thead class="table-dark" style=" color: darkgreen;">
+                <tr>
+                    <th>Rank</th>
+                    <th>Fisker</th>
+                    <th>Vægt</th>
+                    <th>Længde</th>
+                </tr>
+            </thead>
+            <tbody class="con2" style="color: white;">
+                @{
+                    int rank = 1;
+                }
+                @foreach (var post in posts)
+                {
+                    var heaviestFish = post.Fish?.OrderByDescending(f => f.FishWeight).FirstOrDefault();
+                    var lengthFish = post.Fish?.OrderByDescending(f => f.FishLength).FirstOrDefault();
+
+                    <tr style="cursor: pointer; color: white; " @onclick="() => NavigateToPostDetails(post.PostId)">
+                        <td><b>@rank</b></td>
+                        <td>
+                            @post.User?.Name <br />
+                            <small class="text-muted">(@post.User?.UserName)</small>
+                        </td>
+                        <td>
+                            @(heaviestFish != null ? Convert.ToString(heaviestFish.FishWeight) : "0") kg
+                        </td>
+                        <td>
+                            @(lengthFish != null ? Convert.ToString(lengthFish.FishLength) : "0") cm
+                        </td>
+                    </tr>
+
+                    rank++;
+                }
+            </tbody>
+        </table>
+    }
+</div>
+
+
+@code {
+    private List<Post> posts;
+
+    protected override async Task OnInitializedAsync()
+    {
+        posts = await PostRepo.GetLeaderBoardWeigthAsync();
+    }
+
+    private void NavigateToPostDetails(int postId)
+    {
+        NavManager.NavigateTo($"/postdetails/{postId}");
+    }
+}
