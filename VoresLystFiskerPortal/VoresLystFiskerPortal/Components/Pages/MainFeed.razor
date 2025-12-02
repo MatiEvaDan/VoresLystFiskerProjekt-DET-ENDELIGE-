@@ -1,0 +1,45 @@
+﻿@page "/feed"
+@using VoresLystFiskerPortal.Models
+@using VoresLystFiskerPortal.Persistence
+@inject IPostRepo PostRepo
+
+
+<VoresLystFiskerPortal.Components.Layout.BodyLayout>
+    <div class="container" style="max-width: 700px; margin-top: 20px;">
+
+        @if (posts == null)
+        {
+            <div class="text-center">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Indlæser...</span>
+                </div>
+                <p>Henter fangster...</p>
+            </div>
+        }
+        else if (!posts.Any())
+        {
+            <div class="alert alert-info text-center">
+                Der er ingen posts endnu. Vær den første til at dele en fangst!
+            </div>
+        }
+        else
+        {
+            @foreach (var post in posts)
+            {
+                <PostCard PostData="post" />
+            }
+        }
+    </div>
+
+</VoresLystFiskerPortal.Components.Layout.BodyLayout>
+
+
+@code {
+    private List<Post> posts;
+
+    protected override async Task OnInitializedAsync()
+    {
+        
+        posts = await PostRepo.GetFeedPostsAsync();
+    }
+}

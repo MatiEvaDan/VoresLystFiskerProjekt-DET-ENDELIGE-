@@ -1,0 +1,117 @@
+﻿@page "/postdetails/{PostId:int}"
+@using VoresLystFiskerPortal.Models
+@using VoresLystFiskerPortal.Persistence
+@inject IPostRepo PostRepo
+@inject Microsoft.AspNetCore.Components.NavigationManager NavManager
+
+
+<VoresLystFiskerPortal.Components.Layout.BodyLayout>
+    <div class="container post-detail-container">
+        
+        @if (isLoading)
+        {
+            <div class="text-center mt-5">
+                <div class="spinner-border text-primary" role="status"></div>
+                <p>Indlæser post...</p>
+            </div>
+        }
+        else if (posts == null)
+        {
+            <div class="alert alert-warning mt-5">Posten kunne ikke findes eller er blevet slettet.</div>
+        }
+        else
+        {
+            <div class="card shadow-lg">
+                <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <span class="fw-bold me-2 fs-5">@posts.User?.Name</span>
+                        <small class="text-muted">@posts.User?.UserName</small>
+                    </div>
+                    <small class="text-muted fs-6">@posts.DateAndTime.ToString("dd. MMM yyyy HH:mm")</small>
+                </div>
+                
+                <div class="card-body p-4">
+                    
+                    
+                    @if (!string.IsNullOrEmpty(posts.PostImage))
+                    {
+                        <img src="@posts.PostImage" class="img-fluid rounded mb-4" style="max-height: 400px; width: 100%; object-fit: cover;" alt="Fangstbillede">
+                    }
+
+                   
+                    <h5 class="card-title mb-3">📍 @posts.Location</h5>
+                    <p class="card-text fs-6">@posts.Description</p> 
+                    
+                    <hr class="my-4" />
+                    
+                    
+                    <h6 class="mb-3">Detaljer og Fangst:</h6>
+                    <div class="d-flex flex-wrap gap-3" style="font-size: 0.9rem;">
+                        
+                        
+                        <span class="badge bg-info bg-opacity-10 text-info border border-info p-2">
+                            🗺️ Spot: @posts.Location
+                        </span>
+
+                        
+                        @if (posts.Fish != null && posts.Fish.Any())
+                        {
+                            @foreach (var fish in posts.Fish)
+                            {
+                                <div class="badge bg-success bg-opacity-10 text-success border border-success p-2">
+                                    🐟 @fish.FishType: @fish.FishWeight kg (@fish.FishLength cm) (@fish.FishAmount stk)
+                                </div>
+                            }
+                        }
+
+                        
+                        @if (posts.TechniqueEquipments != null && posts.TechniqueEquipments.Any())
+                        {
+                            @foreach (var gear in posts.TechniqueEquipments)
+                            {
+                                <div class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary p-2">
+                                    🎣 Teknik: @gear.FishingTechnique, Krog: @gear.HookName (@gear.HookType)
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</VoresLystFiskerPortal.Components.Layout.BodyLayout>
+
+<style>
+    .post-detail-container {
+        max-width: 900px; /* Gør siden bredere end feedet (700px) */
+        padding-top: 30px;
+        padding-bottom: 50px;
+    }
+</style>
+
+@code {
+    [Parameter]
+    public int PostId { get; set; }
+
+    private Post posts;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            
+            posts = await PostRepo.GetByIdPostAsync(PostId); 
+        }
+        catch (Exception ex)
+        {
+            
+            Console.WriteLine($"Fejl ved hentning af post ID {PostId}: {ex.Message}");
+            
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}
