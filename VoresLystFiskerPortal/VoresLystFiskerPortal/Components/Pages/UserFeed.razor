@@ -1,0 +1,53 @@
+﻿@page "/userfeed/{UserId}" 
+@using VoresLystFiskerPortal.Models
+@using VoresLystFiskerPortal.Persistence
+@inject IPostRepo PostRepo
+
+<VoresLystFiskerPortal.Components.Layout.BodyLayout>
+
+    <div class="container" style="max-width: 700px; margin-top: 20px;">
+        
+        @if (posts == null)
+        {
+            <div class="text-center">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Indlæser...</span>
+                </div>
+                <p>Henter fangster...</p>
+            </div>
+        }
+        else if (!posts.Any())
+        {
+            <div class="alert alert-info text-center">
+                Der er ingen posts fra denne bruger endnu.
+            </div>
+        }
+        else
+        {
+            @foreach (var post in posts)
+            {
+                <PostCard PostData="post" /> 
+            }
+        }
+    </div>
+</VoresLystFiskerPortal.Components.Layout.BodyLayout>
+
+
+@code {
+    private List<Post> posts;
+
+    [Parameter]
+    public string UserId { get; set; } 
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!string.IsNullOrEmpty(UserId))
+        {
+            posts = await PostRepo.GetUserPostsAsync(UserId);
+        }
+        else
+        {
+             posts = new List<Post>();
+        }
+    }
+}

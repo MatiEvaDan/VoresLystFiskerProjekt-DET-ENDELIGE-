@@ -80,8 +80,20 @@ namespace VoresLystFiskerPortal.Persistence
                 .OrderByDescending(p => p.DateAndTime)
                 .ToListAsync();
         }
+        public async Task<List<Post>> GetUserPostsAsync(string userId)
+        {
+            // userId er nu en string (GUID)
+            return await _applicationDbContext.Posts
+                // Vi bruger Post-objektets UserId-egenskab, som holder fremmednøglen til ApplicationUser.Id
+                .Where(p => p.UserId == userId)
+                .Include(p => p.User)
+                .Include(p => p.Fish)
+                .Include(p => p.TechniqueEquipments)
+                .OrderByDescending(p => p.DateAndTime)
+                .ToListAsync();
+        }
 
-        
+
 
 
 

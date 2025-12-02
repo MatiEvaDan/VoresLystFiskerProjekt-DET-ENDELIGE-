@@ -11,5 +11,6 @@ namespace VoresLystFiskerPortal.Persistence
         Task UpdatePostAsync(int id, Post _post);
         Task<List<Post>> GetFeedPostsAsync();
         Task<List<Post>> GetLeaderBoardWeigthAsync();
+        Task<List<Post>> GetUserPostsAsync(string userId);
     }
 }
