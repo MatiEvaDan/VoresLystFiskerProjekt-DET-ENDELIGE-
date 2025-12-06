@@ -2,7 +2,6 @@ using VoresLystFiskerPortal.Persistence;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using VoresLystFiskerPortal.Client.Pages;
 using VoresLystFiskerPortal.Components;
 using VoresLystFiskerPortal.Components.Account;
 using VoresLystFiskerPortal.Data;
