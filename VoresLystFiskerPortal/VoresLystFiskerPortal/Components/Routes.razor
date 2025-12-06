@@ -1,7 +1,9 @@
-﻿<Router AppAssembly="typeof(Program).Assembly" AdditionalAssemblies="new[] { typeof(Client._Imports).Assembly }">
-    <Found Context="routeData">
-        <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)">
-            <NotAuthorized>
+﻿@* Styrer hvilken komponent der skal vises, og om brugeren må se den  *@
+
+<Router AppAssembly="typeof(Program).Assembly" AdditionalAssemblies="new[] { typeof(Client._Imports).Assembly }">
+    <Found Context="routeData"> @* Routeren har fundet en matchende komponent og evt URL *@
+        <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)"> @* Er bruger logget ind? Opfylder bruger krav? *@
+            <NotAuthorized> 
                 <RedirectToLogin />
             </NotAuthorized>
         </AuthorizeRouteView>
