@@ -55,6 +55,18 @@ namespace VoresLystFiskerPortal.Persistence
                 .FirstOrDefaultAsync(p => p.PostId == id);
         }
 
+        public async Task<List<Post>> GetPostsByUserIdAsync(int id)
+        {
+            string userIdString = id.ToString();
+
+            return await _applicationDbContext.Posts
+                .Where(p => p.UserId == userIdString)
+                .ToListAsync();
+        }
+
+
+
+
         public async Task<List<Post>> GetAllPostsAsync()
         {
             return await _applicationDbContext.Posts.ToListAsync();

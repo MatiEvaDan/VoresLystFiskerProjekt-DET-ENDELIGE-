@@ -46,10 +46,6 @@
             </div>
         </div>
     }
-
-
-
-
     <div class="mb-3">
         <label for="FishTypeBox" class="form-label">Type af fisk: </label>
         <input type="text" class="form-control"
@@ -70,8 +66,6 @@
         <input type="text" class="form-control"
                @bind="newFish.FishAmount">
     </div>
-
-
     <div class="mb-3">
         <label for="TechniqueEquipmentBox" class="form-label">Fisketeknik: </label>
         <input type="text" class="form-control"
@@ -87,11 +81,6 @@
         <input type="text" class="form-control"
                @bind="newTechniqueEquipment.HookName">
     </div>
-
-
-
-
-
     <button type="button" class="btn btn-primary" @onclick="SavePost">
         Opret mit opslag
     </button>
@@ -103,11 +92,6 @@
     <div class="alert alert-success">@successMessage</div>
 }
 
-
-
-
-
-
 @code {
     private Fish newFish = new Fish();
     private Post newPost = new Post();
@@ -116,6 +100,9 @@
 
     private List<string> Cities = new();
     private WeatherInfo? weatherInfo;
+
+    [Parameter]
+    public EventCallback<Post> OnPostCreated { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -130,7 +117,7 @@
         };
     }
 
-   
+
     private async Task OnLocationChanged(ChangeEventArgs e)
     {
         var city = e.Value?.ToString();
@@ -184,9 +171,6 @@
                 var userId = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
                 newPost.UserId = userId; // Sæt UserId her
             }
-
-
-           
             newPost.DateAndTime = DateTime.Now;
 
             await postRepo.AddPostAsync(newPost);
@@ -195,10 +179,15 @@
             newTechniqueEquipment.PostId = newPost.PostId;
             await techniqueEquipmentRepo.AddTechniqueEquipmentAsync(newTechniqueEquipment);
 
+            // Når opslaget er oprettet, kalder vi OnPostCreated-eventet.
+            await OnPostCreated.InvokeAsync(newPost);
+
             successMessage = "Dit opslag er oprettet!";
             newPost = new Post();
             newFish = new Fish();
             newTechniqueEquipment = new TechniqueEquipment();
+
+           
 
         }
         catch (Exception e)

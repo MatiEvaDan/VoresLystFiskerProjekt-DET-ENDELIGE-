@@ -8,6 +8,7 @@ namespace VoresLystFiskerPortal.Persistence
         Task DeletePostAsync(int id);
         Task<List<Post>> GetAllPostsAsync();
         Task<Post> GetByIdPostAsync(int id);
+        Task<List<Post>> GetPostsByUserIdAsync(int id);
         Task UpdatePostAsync(int id, Post _post);
         Task<List<Post>> GetFeedPostsAsync();
         Task<List<Post>> GetLeaderBoardWeigthAsync();
