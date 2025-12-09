@@ -2,14 +2,9 @@
 @rendermode InteractiveServer
 @attribute [Authorize]
 @inject NavigationManager NavManager
-@inject IPostRepo PostRepo
 @inject AuthenticationStateProvider AuthenticationState
 
 <EditProfileComponent></EditProfileComponent>
-
-
-
-
 
 <button class="home-btn" @onclick="NavigateCreatePost">
     <img src="/Images/CreatePost_Ikon.png"
@@ -17,58 +12,24 @@
          style="border-radius: 50%; width: 40px; height: 40px; object-fit: cover; border: 2px solid #fff;" />Nyt Opslag
 </button>
 
- @if (!_loaded)
-{
-    <p>Henter dine opslag...</p>
-}
-else
-{
-   @foreach (var post in listOfPosts)
-{
-    <PostCard PostData="post" />
-}
-}
+<UserFeed UserId="@loggedInUserId" />
+
+
 
 
 @code {
+    private string loggedInUserId;
 
-    private Post singlePost;
-    private List<Post> listOfPosts = new();
-    private bool _loaded = false;
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override async Task OnInitializedAsync()
     {
-        if (firstRender)
-        {
             // Hent brugerens ID fra AuthenticationState
             var authState = await AuthenticationState.GetAuthenticationStateAsync();
             var user = authState.User;
-            var userId = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-
-            // Hent alle posts for denne bruger fra dit repository
-            if (int.TryParse(userId, out int numericUserId))
-            {
-                listOfPosts = await PostRepo.GetPostsByUserIdAsync(numericUserId);
-            }
-            // Tilføj den til listen
-            if (singlePost != null)
-            {
-                listOfPosts.Add(singlePost);
-            }
-            _loaded = true;
-            StateHasChanged();
-            
-        }
+        loggedInUserId = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
         
-
     }
-
-  
     private void NavigateCreatePost()
     {
         NavManager.NavigateTo("/createpost");
     }
-
-   
-
 }

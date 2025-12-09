@@ -6,97 +6,109 @@ namespace VoresLystFiskerPortal.Persistence
 {
     public class PostRepo : IPostRepo
     {
-        private readonly ApplicationDbContext _applicationDbContext;
+        private readonly IDbContextFactory<ApplicationDbContext> _contextFactory;
 
-        public PostRepo(ApplicationDbContext applicationDbContext)
+        public PostRepo(IDbContextFactory<ApplicationDbContext> contextFactory)
         {
-            _applicationDbContext = applicationDbContext;
-
+            _contextFactory = contextFactory;
         }
 
         public async Task AddPostAsync(Post post)
         {
-            await _applicationDbContext.Posts.AddAsync(post);
-            await _applicationDbContext.SaveChangesAsync();
+            await using var context = _contextFactory.CreateDbContext();
+            await context.Posts.AddAsync(post);
+            await context.SaveChangesAsync();
         }
 
         public async Task DeletePostAsync(int id)
         {
-
-            var post = await _applicationDbContext.Posts
-                .FirstOrDefaultAsync(p => p.PostId == id);
-
-            if (post != null)
-                _applicationDbContext.Remove(post);
-            await _applicationDbContext.SaveChangesAsync();
-
-        }
-
-        public async Task UpdatePostAsync(int id, Post _post)
-        {
-
-            var post = await _applicationDbContext.Posts
-                .FirstOrDefaultAsync(p => p.PostId == id);
+            await using var context = _contextFactory.CreateDbContext();
+            var post = await context.Posts.FirstOrDefaultAsync(p => p.PostId == id);
 
             if (post != null)
             {
-                post.DateAndTime = _post.DateAndTime;
-                post.PostImage = _post.PostImage;
-                post.Location = _post.Location;
-                post.Description = _post.Description;
-
-                await _applicationDbContext.SaveChangesAsync();
+                context.Posts.Remove(post);
+                await context.SaveChangesAsync();
             }
-
         }
-        public async Task<Post> GetByIdPostAsync(int id)
+
+        public async Task UpdatePostAsync(int id, Post updatedPost)
         {
-            return await _applicationDbContext.Posts
+            await using var context = _contextFactory.CreateDbContext();
+            var post = await context.Posts.FirstOrDefaultAsync(p => p.PostId == id);
+
+            if (post != null)
+            {
+                post.DateAndTime = updatedPost.DateAndTime;
+                post.PostImage = updatedPost.PostImage;
+                post.Location = updatedPost.Location;
+                post.Description = updatedPost.Description;
+
+                await context.SaveChangesAsync();
+            }
+        }
+
+        public async Task<Post?> GetByIdPostAsync(int id)
+        {
+            await using var context = _contextFactory.CreateDbContext();
+            return await context.Posts
+                .Include(p => p.User)
+                .Include(p => p.Fish)
+                .Include(p => p.TechniqueEquipments)
                 .FirstOrDefaultAsync(p => p.PostId == id);
         }
 
         public async Task<List<Post>> GetPostsByUserIdAsync(int id)
         {
+            await using var context = _contextFactory.CreateDbContext();
             string userIdString = id.ToString();
 
-            return await _applicationDbContext.Posts
+            return await context.Posts
                 .Where(p => p.UserId == userIdString)
-                .ToListAsync();
-        }
-
-
-
-
-        public async Task<List<Post>> GetAllPostsAsync()
-        {
-            return await _applicationDbContext.Posts.ToListAsync();
-        }
-
-        public async Task<List<Post>> GetLeaderBoardWeigthAsync()
-        {
-            return await _applicationDbContext.Posts
-                .Include(p => p.User)                 
-                .Include(p => p.Fish)                 
-                .Include(p => p.TechniqueEquipments)                                   
-                .OrderByDescending(p => p.Fish.Any() ? p.Fish.Max(f => f.FishWeight) : 0)
-                .Take(10) 
-                .ToListAsync();
-        }
-
-        public async Task<List<Post>> GetFeedPostsAsync()
-        {
-            return await _applicationDbContext.Posts
                 .Include(p => p.User)
                 .Include(p => p.Fish)
                 .Include(p => p.TechniqueEquipments)
                 .OrderByDescending(p => p.DateAndTime)
                 .ToListAsync();
         }
+
+        public async Task<List<Post>> GetAllPostsAsync()
+        {
+            await using var context = _contextFactory.CreateDbContext();
+            return await context.Posts
+                .Include(p => p.User)
+                .Include(p => p.Fish)
+                .Include(p => p.TechniqueEquipments)
+                .ToListAsync();
+        }
+
+        public async Task<List<Post>> GetLeaderBoardWeigthAsync()
+        {
+            await using var context = _contextFactory.CreateDbContext();
+            return await context.Posts
+                .Include(p => p.User)
+                .Include(p => p.Fish)
+                .Include(p => p.TechniqueEquipments)
+                .OrderByDescending(p => p.Fish.Any() ? p.Fish.Max(f => f.FishWeight) : 0)
+                .Take(10)
+                .ToListAsync();
+        }
+
+        public async Task<List<Post>> GetFeedPostsAsync()
+        {
+            await using var context = _contextFactory.CreateDbContext();
+            return await context.Posts
+                .Include(p => p.User)
+                .Include(p => p.Fish)
+                .Include(p => p.TechniqueEquipments)
+                .OrderByDescending(p => p.DateAndTime)
+                .ToListAsync();
+        }
+
         public async Task<List<Post>> GetUserPostsAsync(string userId)
         {
-            // userId er nu en string (GUID)
-            return await _applicationDbContext.Posts
-                // Vi bruger Post-objektets UserId-egenskab, som holder fremmednøglen til ApplicationUser.Id
+            await using var context = _contextFactory.CreateDbContext();
+            return await context.Posts
                 .Where(p => p.UserId == userId)
                 .Include(p => p.User)
                 .Include(p => p.Fish)
@@ -104,11 +116,123 @@ namespace VoresLystFiskerPortal.Persistence
                 .OrderByDescending(p => p.DateAndTime)
                 .ToListAsync();
         }
-
-
-
-
-
     }
 }
+
+//{
+//    public class PostRepo : IPostRepo
+//    {
+//        //private readonly ApplicationDbContext _applicationDbContext;
+
+//        //public PostRepo(ApplicationDbContext applicationDbContext)
+//        //{
+//        //    _applicationDbContext = applicationDbContext;
+
+//        //}
+
+//        private readonly IDbContextFactory<ApplicationDbContext> _contextFactory;
+
+//        public PostRepo(IDbContextFactory<ApplicationDbContext> contextFactory)
+//        {
+//            _contextFactory = contextFactory;
+//        }
+
+
+//        public async Task AddPostAsync(Post post)
+//        {
+//            await _applicationDbContext.Posts.AddAsync(post);
+//            await _applicationDbContext.SaveChangesAsync();
+//        }
+
+//        public async Task DeletePostAsync(int id)
+//        {
+
+//            var post = await _applicationDbContext.Posts
+//                .FirstOrDefaultAsync(p => p.PostId == id);
+
+//            if (post != null)
+//                _applicationDbContext.Remove(post);
+//            await _applicationDbContext.SaveChangesAsync();
+
+//        }
+
+//        public async Task UpdatePostAsync(int id, Post _post)
+//        {
+
+//            var post = await _applicationDbContext.Posts
+//                .FirstOrDefaultAsync(p => p.PostId == id);
+
+//            if (post != null)
+//            {
+//                post.DateAndTime = _post.DateAndTime;
+//                post.PostImage = _post.PostImage;
+//                post.Location = _post.Location;
+//                post.Description = _post.Description;
+
+//                await _applicationDbContext.SaveChangesAsync();
+//            }
+
+//        }
+//        public async Task<Post> GetByIdPostAsync(int id)
+//        {
+//            return await _applicationDbContext.Posts
+//                .FirstOrDefaultAsync(p => p.PostId == id);
+//        }
+
+//        public async Task<List<Post>> GetPostsByUserIdAsync(int id)
+//        {
+//            string userIdString = id.ToString();
+
+//            return await _applicationDbContext.Posts
+//                .Where(p => p.UserId == userIdString)
+//                .ToListAsync();
+//        }
+
+
+
+
+//        public async Task<List<Post>> GetAllPostsAsync()
+//        {
+//            return await _applicationDbContext.Posts.ToListAsync();
+//        }
+
+//        public async Task<List<Post>> GetLeaderBoardWeigthAsync()
+//        {
+//            return await _applicationDbContext.Posts
+//                .Include(p => p.User)                 
+//                .Include(p => p.Fish)                 
+//                .Include(p => p.TechniqueEquipments)                                   
+//                .OrderByDescending(p => p.Fish.Any() ? p.Fish.Max(f => f.FishWeight) : 0)
+//                .Take(10) 
+//                .ToListAsync();
+//        }
+
+//        public async Task<List<Post>> GetFeedPostsAsync()
+//        {
+//            return await _applicationDbContext.Posts
+//                .Include(p => p.User)
+//                .Include(p => p.Fish)
+//                .Include(p => p.TechniqueEquipments)
+//                .OrderByDescending(p => p.DateAndTime)
+//                .ToListAsync();
+//        }
+//        public async Task<List<Post>> GetUserPostsAsync(string userId)
+//        {
+//            // userId er nu en string (GUID)
+//            return await _applicationDbContext.Posts
+//                // Vi bruger Post-objektets UserId-egenskab, som holder fremmednøglen til ApplicationUser.Id
+//                .Where(p => p.UserId == userId)
+//                .Include(p => p.User)
+//                .Include(p => p.Fish)
+//                .Include(p => p.TechniqueEquipments)
+//                .OrderByDescending(p => p.DateAndTime)
+//                .ToListAsync();
+//        }
+
+
+
+
+
+//    }
+//}
 
