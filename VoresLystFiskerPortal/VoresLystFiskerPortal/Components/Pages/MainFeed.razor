@@ -1,11 +1,9 @@
 ﻿@page "/feed"
-@using VoresLystFiskerPortal.Models
-@using VoresLystFiskerPortal.Persistence
 @inject IPostRepo PostRepo
 @attribute [Authorize]
 
 
-<VoresLystFiskerPortal.Components.Layout.BodyLayout>
+<BodyLayout>
     <div class="container" style="max-width: 700px; margin-top: 20px;">
 
         @if (posts == null)
@@ -27,12 +25,12 @@
         {
             @foreach (var post in posts)
             {
-                <PostCard PostData="post" />
+                <PostCardComponent PostData="post" />
             }
         }
     </div>
 
-</VoresLystFiskerPortal.Components.Layout.BodyLayout>
+</BodyLayout>
 
 
 @code {

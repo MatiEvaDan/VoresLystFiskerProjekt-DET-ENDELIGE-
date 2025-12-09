@@ -3,8 +3,12 @@
 <div class="card mb-3 shadow-sm" style="overflow: hidden;">
     <div class="card-header d-flex justify-content-between align-items-center bg-light py-2">
         <div class="d-flex align-items-center">
-            <span class="fw-bold me-2">@PostData.User?.Name</span>
-            <small class="text-muted" style="font-size: 0.8rem;">@PostData.User?.UserName</small>
+            <a href="/userfeed/@PostData.UserId" class="fw-bold me-2">
+                @PostData.User?.Name
+            </a>
+            <a href="/userfeed/@PostData.UserId" class="text-muted" style="font-size: 0.8rem;">
+                @PostData.User?.UserName
+            </a>
         </div>
         <small class="text-muted">@PostData.DateAndTime.ToString("dd. MMM HH:mm")</small>
     </div>
@@ -87,4 +91,5 @@
         NavManager.NavigateTo($"/postdetails/{PostId}");
     }
 }
+
 
