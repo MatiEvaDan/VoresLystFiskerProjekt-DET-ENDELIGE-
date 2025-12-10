@@ -1,5 +1,7 @@
-﻿@page "/userfeed/{UserId}" 
+﻿@page "/feed"
+@page "/userfeed/{UserId}" 
 @inject IPostRepo PostRepo
+@attribute [Authorize]
 
 <BodyLayout>
     <div class="container" style="max-width: 700px; margin-top: 20px;">
@@ -47,7 +49,9 @@
         }
         else
         {
-             posts = new List<Post>();
+            posts = await PostRepo.GetFeedPostsAsync();
         }
     }
+
+   
 }
