@@ -1,46 +1,90 @@
 ﻿@page "/feed"
 @using VoresLystFiskerPortal.Models
 @using VoresLystFiskerPortal.Persistence
+@using VoresLystFiskerPortal.Service
 @inject IPostRepo PostRepo
+@inject SearchState SearchState
 @attribute [Authorize]
-
 
 <VoresLystFiskerPortal.Components.Layout.BodyLayout>
     <div class="container" style="max-width: 700px; margin-top: 20px;">
 
-        @if (posts == null)
+        @if (filteredPosts == null)
         {
             <div class="text-center">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Indlæser...</span>
-                </div>
+                <div class="spinner-border text-primary"></div>
                 <p>Henter fangster...</p>
             </div>
         }
-        else if (!posts.Any())
+        else if (!filteredPosts.Any())
         {
             <div class="alert alert-info text-center">
-                Der er ingen posts endnu. Vær den første til at dele en fangst!
+                Ingen opslag matcher din søgning.
             </div>
         }
         else
         {
-            @foreach (var post in posts)
+            @foreach (var post in filteredPosts)
             {
                 <PostCard PostData="post" />
             }
         }
     </div>
-
 </VoresLystFiskerPortal.Components.Layout.BodyLayout>
 
-
 @code {
-    private List<Post> posts;
+    private List<Post> allPosts = new();
+    private List<Post> filteredPosts = new();
 
     protected override async Task OnInitializedAsync()
     {
-        
-        posts = await PostRepo.GetFeedPostsAsync();
+        // 🔥 Lyt til søgning
+        SearchState.OnChange += ApplyFilter;
+
+        // 🔥 Hent posts
+        allPosts = await PostRepo.GetFeedPostsAsync();
+
+        // 🔥 Start med alle
+        ApplyFilter();
+    }
+
+    private void ApplyFilter()
+    {
+        var query = SearchState.Query?.Trim().ToLower() ?? "";
+
+        if (string.IsNullOrWhiteSpace(query))
+        {
+            filteredPosts = allPosts;
+        }
+        else
+        {
+            filteredPosts = allPosts.Where(p =>
+                (!string.IsNullOrEmpty(p.Location) &&
+                    p.Location.ToLower().Contains(query)) ||
+
+                (!string.IsNullOrEmpty(p.Description) &&
+                    p.Description.ToLower().Contains(query)) ||
+
+                (p.Fish != null &&
+                    p.Fish.Any(f => f.FishType.ToLower().Contains(query))) ||
+
+                (p.TechniqueEquipments != null &&
+                    p.TechniqueEquipments.Any(t =>
+                        (!string.IsNullOrEmpty(t.FishingTechnique) &&
+                            t.FishingTechnique.ToLower().Contains(query)) ||
+                        (!string.IsNullOrEmpty(t.HookName) &&
+                            t.HookName.ToLower().Contains(query)) ||
+                        (!string.IsNullOrEmpty(t.HookType) &&
+                            t.HookType.ToLower().Contains(query))
+                    ))
+            ).ToList();
+        }
+
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        SearchState.OnChange -= ApplyFilter;
     }
 }
