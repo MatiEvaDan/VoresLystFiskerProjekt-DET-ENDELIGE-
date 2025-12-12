@@ -56,6 +56,7 @@ namespace VoresLystFiskerPortal
             builder.Services.AddScoped<IFishRepo, FishRepo>();
             builder.Services.AddScoped<ITechniqueEquipmentRepo, TechniqueEquipmentRepo>();
             builder.Services.AddScoped<IPostRepo, PostRepo>();
+            builder.Services.AddSingleton<SearchState>();
 
             var app = builder.Build();
 

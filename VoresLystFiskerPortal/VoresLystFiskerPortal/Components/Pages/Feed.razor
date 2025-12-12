@@ -1,6 +1,7 @@
 ﻿@page "/feed"
 @page "/userfeed/{UserId}" 
 @inject IPostRepo PostRepo
+@inject SearchState SearchState
 @attribute [Authorize]
 
 <BodyLayout>
@@ -28,6 +29,30 @@
                 <PostCardComponent PostData="post" />
             }
         }
+
+    </div>
+    <div class="container" style="max-width: 700px; margin-top: 20px;">
+
+        @if (filteredPosts == null)
+        {
+            <div class="text-center">
+                <div class="spinner-border text-primary"></div>
+                <p>Henter fangster...</p>
+            </div>
+        }
+        else if (!filteredPosts.Any())
+        {
+            <div class="alert alert-info text-center">
+                Ingen opslag matcher din søgning.
+            </div>
+        }
+        else
+        {
+            @foreach (var post in filteredPosts)
+            {
+                <PostCardComponent PostData="post" />
+            }
+        }
     </div>
 </BodyLayout>
 
@@ -37,12 +62,14 @@
 
 @code {
     private List<Post> posts;
+    private List<Post> filteredPosts = new();
 
     [Parameter]
     public string UserId { get; set; } 
 
     protected override async Task OnInitializedAsync()
     {
+
         if (!string.IsNullOrEmpty(UserId))
         {
             posts = await PostRepo.GetUserPostsAsync(UserId);
@@ -51,7 +78,54 @@
         {
             posts = await PostRepo.GetFeedPostsAsync();
         }
+        // 2) Hvis SearchState bruges, abonnér på event og filtrér
+        SearchState.OnChange += ApplyFilter;
+
+        // Brug den hentede liste til søgning
+        ApplyFilter();
     }
+
+
+    private void ApplyFilter()
+    {
+        var query = SearchState.Query?.Trim().ToLower() ?? "";
+
+        if (string.IsNullOrWhiteSpace(query))
+        {
+            filteredPosts = posts;
+        }
+        else
+        {
+            filteredPosts = posts.Where(p =>
+                (!string.IsNullOrEmpty(p.Location) &&
+                    p.Location.ToLower().Contains(query)) ||
+
+                (!string.IsNullOrEmpty(p.Description) &&
+                    p.Description.ToLower().Contains(query)) ||
+
+                (p.Fish != null &&
+                    p.Fish.Any(f => f.FishType.ToLower().Contains(query))) ||
+
+                (p.TechniqueEquipments != null &&
+                    p.TechniqueEquipments.Any(t =>
+                        (!string.IsNullOrEmpty(t.FishingTechnique) &&
+                            t.FishingTechnique.ToLower().Contains(query)) ||
+                        (!string.IsNullOrEmpty(t.HookName) &&
+                            t.HookName.ToLower().Contains(query)) ||
+                        (!string.IsNullOrEmpty(t.HookType) &&
+                            t.HookType.ToLower().Contains(query))
+                    ))
+            ).ToList();
+        }
+
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        SearchState.OnChange -= ApplyFilter;
+    }
+}
 
    
 }
