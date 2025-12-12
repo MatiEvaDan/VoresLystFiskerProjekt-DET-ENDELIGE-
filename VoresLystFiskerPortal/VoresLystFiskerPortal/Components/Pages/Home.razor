@@ -1,12 +1,33 @@
 ﻿@page "/"
+@inject NavigationManager Nav
+@rendermode InteractiveServer
 
-<BodyLayout>
+<link rel="stylesheet" href="css/Homecss.css" />
 
+<div class="hero">
+    <div class="hero-content">
+        <h1>Lystfiskerportalen</h1>
 
+        <p class="lead">
+            Del dine fangster, teknikker og oplevelser – og bliv inspireret af andre lystfiskere.
+        </p>
 
-<PageTitle>Lystfiskerportalen</PageTitle>
+        <div class="cta-buttons">
+            <button class="btn btn-primary btn-lg" @onclick="GoToRegister">Opret bruger</button>
+            <button class="btn btn-outline-light btn-lg" @onclick="GoToLogin">Log ind</button>
+        </div>
+    </div>
+</div>
 
-<h1>Velkommen til vores alles store Lystfiskerportal! :)</h1>
+@code {
+    private void GoToRegister()
+    {
+        Nav.NavigateTo("/Account/Register"); // Identity route i .NET 8
 
-Her kan du dele alt fra dine fisketure - lige fra de krogtyper, dine mest anbefalede teknikker samt de største eller længste fisk, du har fanget. Lad os alle følge hinanden og blive inspireret herinde!
-</BodyLayout>
+    }
+
+    private void GoToLogin()
+    {
+        Nav.NavigateTo("/Account/Login"); // Identity route i .NET 8
+    }
+}
