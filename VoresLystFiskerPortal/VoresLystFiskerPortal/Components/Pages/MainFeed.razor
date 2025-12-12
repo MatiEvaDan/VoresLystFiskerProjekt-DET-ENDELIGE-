@@ -38,13 +38,13 @@
 
     protected override async Task OnInitializedAsync()
     {
-        // 🔥 Lyt til søgning
+       
         SearchState.OnChange += ApplyFilter;
 
-        // 🔥 Hent posts
+      
         allPosts = await PostRepo.GetFeedPostsAsync();
 
-        // 🔥 Start med alle
+        
         ApplyFilter();
     }
 
