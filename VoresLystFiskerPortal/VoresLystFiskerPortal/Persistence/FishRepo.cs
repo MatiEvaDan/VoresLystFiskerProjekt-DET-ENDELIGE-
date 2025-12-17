@@ -1,42 +1,45 @@
 ﻿using VoresLystFiskerPortal.Models;
 using Microsoft.EntityFrameworkCore;
 using VoresLystFiskerPortal.Data;
+using Microsoft.Extensions.Hosting;
 
 namespace VoresLystFiskerPortal.Persistence
 {
     public class FishRepo : IFishRepo
     {
-        private readonly ApplicationDbContext _applicationDbContext;
+        private readonly IDbContextFactory<ApplicationDbContext> _contextFactory;
 
-        public FishRepo(ApplicationDbContext applicationDbContext)
+        public FishRepo(IDbContextFactory<ApplicationDbContext> contextFactory)
         {
-            _applicationDbContext = applicationDbContext;
+            _contextFactory = contextFactory;
 
         }
 
         public async Task AddFishAsync(Fish fish)
         {
-            await _applicationDbContext.Fish.AddAsync(fish);
-            await _applicationDbContext.SaveChangesAsync();
+            await using var context = _contextFactory.CreateDbContext();
+            await context.Fish.AddAsync(fish);
+            await context.SaveChangesAsync();
+
         }
 
         public async Task DeleteFishAsync(int id)
         {
 
-            var fish = await _applicationDbContext.Fish
-                .FirstOrDefaultAsync(f => f.FishId == id);
+            await using var context = _contextFactory.CreateDbContext();
+            var fish = await context.Fish.FirstOrDefaultAsync(f => f.FishId == id);
 
             if (fish != null)
-                _applicationDbContext.Remove(fish);
-            await _applicationDbContext.SaveChangesAsync();
+                context.Remove(fish);
+                await context.SaveChangesAsync();
 
         }
-
+       
         public async Task UpdateFishAsync(int id, Fish _fish)
         {
 
-            var fish = await _applicationDbContext.Fish
-                .FirstOrDefaultAsync(f => f.FishId == id);
+            await using var context = _contextFactory.CreateDbContext();
+            var fish = await context.Fish.FirstOrDefaultAsync(f => f.FishId == id);
 
             if (fish != null)
             {
@@ -45,19 +48,20 @@ namespace VoresLystFiskerPortal.Persistence
                 fish.FishType = _fish.FishType;
                 fish.FishAmount = _fish.FishAmount;
 
-                await _applicationDbContext.SaveChangesAsync();
+                await context.SaveChangesAsync();
             }
 
         }
         public async Task<Fish> GetByIdFishAsync(int id)
         {
-            return await _applicationDbContext.Fish
-                .FirstOrDefaultAsync(f => f.FishId == id);
+            await using var context = _contextFactory.CreateDbContext();
+            return await context.Fish.FirstOrDefaultAsync(f => f.FishId == id);
         }
 
         public async Task<List<Fish>> GetAllFishAsync()
         {
-            return await _applicationDbContext.Fish.ToListAsync();
+            await using var context = _contextFactory.CreateDbContext();
+            return await context.Fish.ToListAsync();
         }
 
     }

@@ -6,24 +6,27 @@ namespace VoresLystFiskerPortal.Persistence
 {
     public class TechniqueEquipmentRepo : ITechniqueEquipmentRepo
     {
-        private readonly ApplicationDbContext _applicationDbContext;
+        private readonly IDbContextFactory<ApplicationDbContext> _contextFactory;
 
-        public TechniqueEquipmentRepo(ApplicationDbContext applicationDbContext)
+
+        public TechniqueEquipmentRepo(IDbContextFactory<ApplicationDbContext> contextFactory)
         {
-            _applicationDbContext = applicationDbContext;
+            _contextFactory = contextFactory;
 
         }
 
         public async Task AddTechniqueEquipmentAsync(TechniqueEquipment techniqueEquipment)
         {
-            await _applicationDbContext.TechniqueEquipment.AddAsync(techniqueEquipment);
-            await _applicationDbContext.SaveChangesAsync();
+            await using var context = _contextFactory.CreateDbContext();
+            await context.TechniqueEquipment.AddAsync(techniqueEquipment);
+            await context.SaveChangesAsync();
         }
 
 
         public async Task<List<TechniqueEquipment>> GetAllTechniqueEquipmentAsync()
         {
-            return await _applicationDbContext.TechniqueEquipment.ToListAsync();
+            await using var context = _contextFactory.CreateDbContext();
+            return await context.TechniqueEquipment.ToListAsync();
         }
 
 

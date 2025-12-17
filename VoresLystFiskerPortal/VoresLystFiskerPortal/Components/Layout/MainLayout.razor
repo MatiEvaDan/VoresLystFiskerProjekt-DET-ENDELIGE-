@@ -1,14 +1,15 @@
 ﻿@inherits LayoutComponentBase
+@inject NavigationManager Nav
+
 
 <div class="page">
-    <div class="sidebar">
+
+    <div class="sidebar @(showNavMenu ? "open" : "")">
         <NavMenu />
     </div>
-
-    <main>
-        
+    <main> 
         <header>
-            <HeaderLayout></HeaderLayout>
+            <HeaderLayout OnToggleNav="ToggleNavMenu"></HeaderLayout>
         </header>
         <article class="content px-4">
             @Body
@@ -21,3 +22,16 @@
     <a href="" class="reload">Reload</a>
     <a class="dismiss">🗙</a>
 </div>
+
+
+@code {
+    private bool showNavMenu = false;
+
+    private void ToggleNavMenu()
+    {
+        showNavMenu = !showNavMenu;
+    }
+    
+}
+
+

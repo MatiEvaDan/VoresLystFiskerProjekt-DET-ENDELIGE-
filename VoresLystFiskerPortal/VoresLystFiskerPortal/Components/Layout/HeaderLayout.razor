@@ -1,7 +1,7 @@
 ﻿@inject NavigationManager NavManager
 @inject SignInManager<ApplicationUser> SignInManager
-@rendermode InteractiveServer
 @inject SearchState SearchState
+@rendermode InteractiveServer
 
 @* Nøgleændringen: Vi bruger AuthorizeView til at få adgang til brugerdata *@
 <AuthorizeView>
@@ -10,15 +10,15 @@
             <header class="app-header">
                 <div class="profilcontainer">
                     @* Viser brugernavn direkte fra Context *@
-                    <button class="home-btn" @onclick="NavigateToProfile">@Auth.User.Identity?.Name </button>
+                    <button class="round-btn profile-btn" @onclick="NavigateToProfile">@Auth.User.Identity?.Name </button>
 
                     @* Opdateret @onclick: Kalder nu metoden med UserId fra Context *@
-                    <button class="home-btn" @onclick="NavigateToProfile">
+                    <button class="round-btn profile-btn" @onclick="NavigateToProfile">
                         <img src="/Images/ProfilImageLystFisker.jpg"
                              alt="User profilImage"
                              style="border-radius: 50%; width: 40px; height: 40px; object-fit: cover; border: 2px solid #fff;" />
                     </button>
-                    <form action="Account/Logout" method="post">
+                    <form action="Account/Logout" method="post" class="logout-btn">
                         <AntiforgeryToken />
                         <input type="hidden" name="ReturnUrl" value="@currentUrl" />
                         <button type="submit" class="nav-link">
@@ -26,13 +26,22 @@
                         </button>
                     </form>
 
-                    <button class="home-btn" @onclick="NavigateToHome">
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                         @onclick="ToggleNavClicked"
+                         width="30" height="30" fill="currentColor"
+                         class="bi bi-list" viewBox="0 0 16 16"
+                         style="cursor:pointer">
+                        <path fill-rule="evenodd"
+                              d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5" />
+                    </svg>
+
+                    <button class="round-btn home-btn" @onclick="NavigateToHome">
                         <img src="/Images/HomeBntLystFisker.jpg"
                              alt="Home ikon"
                              style="border-radius: 50%; width: 40px; height: 40px; object-fit: cover; border: 2px solid #fff;" />
                     </button>
 
-                    <button class="home-btn" @onclick="NavigateToLeaderBoardPage">
+                    <button class="round-btn leaderboard-bnt" @onclick="NavigateToLeaderBoardPage">
                         <img src="/Images/Leaderboard_Ikon.jpg"
                              alt="Leaderboard ikon"
                              style="border-radius: 50%; width: 40px; height: 40px; object-fit: cover; border: 2px solid #fff;" />
@@ -69,6 +78,13 @@
 @code {
     private string? currentUrl;
     private string searchText = "";
+    [Parameter] public EventCallback OnToggleNav { get; set; }
+
+    private async Task ToggleNavClicked()
+    {
+        await OnToggleNav.InvokeAsync();
+    }
+
     private void NavigateToHome()
 
     {
@@ -124,10 +140,7 @@
         height: 60px;
     }
 
-
-
-    .home-btn {
-        order: 1;
+    .round-btn {
         background: none;
         border: none;
         padding: 0;
@@ -138,33 +151,18 @@
         margin-right: 25px;
     }
 
-    .profilcontainer {
-        order: 2;
-        display: flex;
-        align-items: center;
-        gap: 15px;
+        .round-btn:hover {
+            transform: scale(1.05);
+        }
+
+    .home-btn {
+        order: 1;
     }
 
-    .search-section {
-        order: 4;
-        margin-left: auto;
-        margin-right: 20px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        max-width: 400px;
+    .leaderboard-bnt {
+        order: 3;
+       
     }
-
-    .search-input {
-        width: 100%;
-        padding: 8px 15px;
-        border: 1px solid #ffffff;
-        border-radius: 20px;
-        background-color: rgba(255,255,255,0.2);
-        color: white;
-        outline: none;
-    }
-
     .search-button {
         border: none;
         background: transparent;
@@ -174,65 +172,26 @@
         padding: 4px 8px;
         transition: transform 0.2s ease-in-out;
     }
-
-        .search-button:hover {
-            transform: scale(1.15);
+    .search-button:hover {
+        transform: scale(1.15);
         }
-
-
-    .leaderboard-bnt {
-        order: 3;
-        border: none;
-        padding: 0;
-        cursor: pointer;
-        transition: transform 0.2s;
-        display: flex;
-        align-items: center;
-        margin-right: 25px;
-    }
-
-    .search-section {
-        order: 4;
-        margin-left: auto;
-        margin-right: 20px;
-        flex-grow: 0;
-        max-width: 400px;
-    }
-
     .logout-btn {
         order: 5;
         background-color: #dc3545;
         color: white;
         border: none;
+        margin-left: auto;
     }
-
-
-
-    .user-name {
-        font-weight: 600;
-        font-size: 1.1em;
-    }
+    .logout-btn:hover {
+        background-color: #c82333;}
 
     .profile-btn {
-        background: none;
-        border: none;
-        padding: 0;
-        cursor: pointer;
-        transition: transform 0.2s;
-        display: flex;
-        align-items: center;
+        order: 2;
     }
 
-        .profile-btn:hover {
-            transform: scale(1.05);
-        }
-
-   
-
-        
-
-    .home-btn,
-    .logout-btn
+    .profile-btn:hover {
+        transform: scale(1.05);
+    }
     .leaderboard-bnt {
         display: flex;
         align-items: center;
@@ -243,12 +202,7 @@
         cursor: pointer;
         transition: background-color 0.2s;
     }
-
-    .logout-btn:hover {
-        background-color: #c82333;
-    }
-
-    clear-button {
+    .clear-button {
         border: none;
         background: transparent;
         color: white;
@@ -257,8 +211,42 @@
         padding: 4px 6px;
         transition: transform 0.2s ease-in-out;
     }
-
     .clear-button:hover {
         transform: scale(1.15);
-
+    }
+    .profilcontainer {
+        order: 2;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+    .search-section {
+        order: 4;
+        margin-left: auto;
+        margin-right: 20px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        max-width: 400px;
+    }
+    .search-input {
+        width: 100%;
+        padding: 8px 15px;
+        border: 1px solid #ffffff;
+        border-radius: 20px;
+        background-color: rgba(255,255,255,0.2);
+        color: white;
+        outline: none;
+    }
+    .search-section {
+        order: 4;
+        margin-left: auto;
+        margin-right: 20px;
+        flex-grow: 0;
+        max-width: 400px;
+    }
+    .user-name {
+        font-weight: 600;
+        font-size: 1.1em;
+    }   
 </style>

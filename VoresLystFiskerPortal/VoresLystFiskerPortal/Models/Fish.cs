@@ -10,7 +10,7 @@
 
 
         public int PostId { get; set; } // Foreign key
-        public Post Post { get; set; }
+        public Post Post { get; set; } //Navigationsproperty
 
     }
 
